@@ -8,6 +8,8 @@
 #include <errno.h>
 #include <sys/wait.h> 
 
+
+
 int main() {
   int num_clients = 3;
   init();

@@ -8,7 +8,32 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <comm.h>
 #define MAXSIZE 256
+
+
+/*Podemos enviar los parametros en una sola string usando:
+char cadena[100]; // Tamaño suficiente para almacenar la cadena final
+
+    // Inicializar la cadena
+    cadena[0] = '\0';
+
+    // Agregar el valor de op a la cadena
+    sprintf(cadena, "%c/", op);
+
+    // Agregar el valor de value1 a la cadena
+    sprintf(cadena + strlen(cadena), "%s/", value1);
+
+    // Agregar el valor de N_Value2 a la cadena
+    sprintf(cadena + strlen(cadena), "%d/", N_Value2);
+
+    // Agregar los valores de V_Value2 a la cadena
+    for (int i = 0; i < 4; i++) {
+        sprintf(cadena + strlen(cadena), "%.1f", V_Value2[i]);
+        if (i < 3) {
+            sprintf(cadena + strlen(cadena), "-");
+        }
+    }*/
 
 int init() {
   mqd_t q_servidor; /* cola de mensajes del servidor */

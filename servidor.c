@@ -14,7 +14,8 @@ pthread_cond_t cond_mensaje;
 mqd_t q_servidor;
 
 
-void tratar_mensaje(void *mess) {
+void tratar_mensaje(void *sc) {
+  char mess[sizeof(struct peticion)]; /* mensaje recibido del cliente  */
   struct peticion mensaje; /* mensaje local */
   mqd_t q_cliente;         /* cola del cliente */
   struct respuesta res; 
@@ -22,7 +23,11 @@ void tratar_mensaje(void *mess) {
   /* el thread copia el mensaje a un mensaje local */
   pthread_mutex_lock(&mutex_mensaje);
 
-  mensaje = (*(struct peticion *)mess);
+  //mensaje = (*(struct peticion *)mess);
+  if (recvMessage(sc, (char *)&mess, sizeof(struct peticion)) == -1) {
+      perror("error al recvMessage");
+      return -1;
+    }
 
   /* ya se puede despertar al servidor*/
   mensaje_no_copiado = false;
@@ -30,8 +35,38 @@ void tratar_mensaje(void *mess) {
   pthread_cond_signal(&cond_mensaje);
 
   pthread_mutex_unlock(&mutex_mensaje);
+  /*Podemos enviar una sola string y deshacerla con:
+    // Tokenizar la cadena
+    token = strtok(cadena, "/");
+    if (token != NULL) {
+        op = token[0]; // La primera letra como operación
+    }
+
+    token = strtok(NULL, "/");
+    if (token != NULL) {
+        strcpy(value1, token); // Copiar el segundo token como value1
+    }
+
+    token = strtok(NULL, "/");
+    if (token != NULL) {
+        N_Value2 = atoi(token); // Convertir el tercer token a entero como N_Value2
+    }
+
+    token = strtok(NULL, "/");
+    if (token != NULL) {
+        // Convertir el cuarto token en un array de números flotantes
+        char *subtoken;
+        int i = 0;
+        subtoken = strtok(token, "-");
+        while (subtoken != NULL && i < 4) {
+            V_Value2[i++] = atof(subtoken); // Convertir cada subtoken a flotante
+            subtoken = strtok(NULL, "-");
+        }
+    }
+*/
 
   /* ejecutar la petición del cliente y preparar respuesta */
+  /*Aqui habra que cambiar dependiendo de como pasemos el mensaje*/
   switch (mensaje.op) {
   case 0:
     init_serv(&res);
@@ -59,37 +94,29 @@ void tratar_mensaje(void *mess) {
   printf("Resultado: %d de la función %d \n", res.resultado, mensaje.op);
   /* Se devuelve el resultado al cliente */
   /* Para ello se envía el resultado a su cola */
-  q_cliente = mq_open(mensaje.q_name, O_WRONLY);
-  if (q_cliente == -1) {
-    perror("No se puede abrir la cola del cliente");
-    mq_close(q_servidor);
-    mq_unlink("/SERVIDOR_CLAVES");
-  } else {
-    if (mq_send(q_cliente, (const char *)&res, sizeof(int), 0) < 0) {
-      perror("mq_send");
-      mq_close(q_servidor);
-      mq_unlink("/SERVIDOR_CLAVES");
-      mq_close(q_cliente);
-    }
-  }
+  ret = sendMessage(sc, (char *)&res, sizeof(struct respuesta));
+        if (ret == -1) {
+            printf("Error en envío\n");
+            return -1 ;
+        }
   
   pthread_exit(0);
 }
 
 int main(void) {
   struct peticion mess;
-  struct mq_attr attr;
+  int sd, sc;
   pthread_attr_t t_attr; // atributos de los threads
   pthread_t thid;
 
   attr.mq_maxmsg = 10;
   attr.mq_msgsize = sizeof(struct peticion);
 
-  q_servidor = mq_open("/SERVIDOR_CLAVES", O_CREAT | O_RDONLY, 0700, &attr);
-  if (q_servidor == -1) {
-    perror("mq_open");
-    return -1;
-  }
+  sd = serverSocket(INADDR_ANY, 4200, SOCK_STREAM) ;
+        if (sd < 0) {
+            printf ("SERVER: Error en serverSocket\n");
+            return 0;
+        }
 
   pthread_mutex_init(&mutex_mensaje, NULL);
   pthread_cond_init(&cond_mensaje, NULL);
@@ -99,12 +126,13 @@ int main(void) {
   pthread_attr_setdetachstate(&t_attr, PTHREAD_CREATE_DETACHED);
 
   while (1) {
-    if (mq_receive(q_servidor, (char *)&mess, sizeof(mess), 0) < 0) {
-      perror("mq_recev");
-      return -1;
-    }
+    sc = serverAccept(sd) ;
+                if (sc < 0) {
+                    printf("Error en serverAccept\n");
+                    continue ;
+                }
 
-    if (pthread_create(&thid, &t_attr, (void *)tratar_mensaje, (void *)&mess) ==
+    if (pthread_create(&thid, &t_attr, (void *)tratar_mensaje, (void *)&sc) ==//No se si se debe pasar asi el descriptor sc
         0) {
       // se espera a que el thread copie el mensaje
       pthread_mutex_lock(&mutex_mensaje);
