@@ -32,7 +32,6 @@ int suma_remota(int sd, int *r, int x, int y) {
         printf("Error envío b\n");
         return -1;
     }
-
     ret = recvMessage(sd, (char *)&res, sizeof(int32_t)); // recibe respuesta
     if (ret == -1) {
         printf("Error en recepción\n");
@@ -52,7 +51,19 @@ int main(int argc, char **argv) {
         printf("Error en clientSocket con %s:%d\n", SERVER_ADDRESS, SERVER_PORT);
         return -1;
     }
-
+    char* mensaje = "Hola desde el cliente";
+    int longitud = strlen(mensaje);
+    ret = sendMessage(sd, (char *)&longitud, sizeof(int)); // envía longitud
+    if (ret == -1) {
+        printf("Error envío longitud\n");
+        return -1;
+    }
+    printf("Mensaje enviado: %s\n con longitud %d", mensaje,longitud);
+    ret = sendMessage(sd, mensaje, strlen(mensaje));
+    if (ret == -1) {
+        printf("Error envío mensaje\n");
+        return -1;
+    }
     // Realizar la suma remota
     ret = suma_remota(sd, &res, 5, 2);
     if (ret < 0) {

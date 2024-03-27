@@ -19,12 +19,17 @@ void tratar_mensaje(void *sc) {
   struct peticion mensaje; /* mensaje local */
   mqd_t q_cliente;         /* cola del cliente */
   struct respuesta res; 
+  int longitud;
 
-  /* el thread copia el mensaje a un mensaje local */
+  /* el thread copia el mensaje a un mensaje local  */
   pthread_mutex_lock(&mutex_mensaje);
+  if (recvMessage(sc, (char *)&longitud, sizeof(int)) == -1) {
+      perror("error al recvMessage");
+      return -1;
+    }
 
   //mensaje = (*(struct peticion *)mess);
-  if (recvMessage(sc, (char *)&mess, sizeof(struct peticion)) == -1) {
+  if (recvMessage(sc, (char *)&mess, longitud) == -1) {
       perror("error al recvMessage");
       return -1;
     }

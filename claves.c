@@ -12,7 +12,7 @@
 #define MAXSIZE 256
 
 
-/*Podemos enviar los parametros en una sola string usando:
+static void create_message(int op,int key, char *value1, int N_Value2, double *V_Value2) {
 char cadena[100]; // Tamaño suficiente para almacenar la cadena final
 
     // Inicializar la cadena
@@ -20,6 +20,8 @@ char cadena[100]; // Tamaño suficiente para almacenar la cadena final
 
     // Agregar el valor de op a la cadena
     sprintf(cadena, "%c/", op);
+    //Agregar Key
+    sprintf(cadena + strlen(cadena), "%d/", key);
 
     // Agregar el valor de value1 a la cadena
     sprintf(cadena + strlen(cadena), "%s/", value1);
@@ -33,11 +35,11 @@ char cadena[100]; // Tamaño suficiente para almacenar la cadena final
         if (i < 3) {
             sprintf(cadena + strlen(cadena), "-");
         }
-    }*/
+    }
+    return cadena;
+}
 
 int init() {
-  mqd_t q_servidor; /* cola de mensajes del servidor */
-  mqd_t q_cliente;  /* cola de mensajes del cliente */
 
   struct peticion pet;
   struct respuesta res; /* respuesta de la operación */
@@ -49,46 +51,38 @@ int init() {
   // CREACION DE LA COLA DE MENSAJES, PONGO EL PID POR SI HAY VARIOS CLIENTES A LA VEZ
 
 	sprintf(colalocal,  "/Cola-%d", getpid());
-  q_cliente = mq_open(colalocal, O_CREAT|O_RDONLY, 0700, &attr);
-  if (q_cliente == -1) {
-    perror("mq_open CLIENTE");
-    return -1;
-  }
-
-  q_servidor = mq_open("/SERVIDOR_CLAVES", O_CREAT | O_WRONLY, 0700, NULL);
-  if (q_servidor == -1) {
-    mq_close(q_cliente);
-    perror("mq_open SERVIDOR");
-    return -1;
-  }
-
-  // RELLENAMOS EL MENSAJE
-  strcpy(pet.q_name, colalocal);
-  pet.op = 0;
+  sock = clientSocket(SERVER_ADDRESS, PORT);
+    if (sock < 0) {
+        perror("Client socket failed");
+        exit(EXIT_FAILURE);
+    }
+  // RELLENAMOS EL MENSAJE,al no tener ninguno yo diria de que sea 0/-1/NULL/-1/-1 o algo por el estilo 
+  request = create_message(0,-1,NULL,-1,-1);
+  int longitud = strlen(mensaje);
 
   // ENVIAMOS EL MENSAJE
-  if (mq_send(q_servidor, (const char *)&pet, sizeof(pet), 0) < 0) {
-    perror("mq_send");
-    return -1;
-  }
+  //Primero la longitud del mensaje para que el servidor pueda recibir el mensaje completo 
+  if (sendMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+        perror("Send request failed");
+        exit(EXIT_FAILURE);
+    }
+  if (sendMessage(sock, (char *)&request, longitud) < 0) {
+        perror("Send request failed");
+        exit(EXIT_FAILURE);
+    }
 
   // RECIBIMOS EL MENSAJE
-  if (mq_receive(q_cliente, (char *)&res, sizeof(int), 0) < 0) {
-    perror("mq_recv");
-    return -1;
-  }
-
+ if (recvMessage(sock, (char *)&response, sizeof(struct respuesta)) < 0) {
+        perror("Receive response failed");
+        exit(EXIT_FAILURE);
+    }
+  printf("Resultado recibido del servidor: %d\n", response.resultado);
   // CERRAMOS LAS COLAS
-  mq_close(q_servidor);
-  mq_close(q_cliente);
-  mq_unlink(colalocal);
+  close(sock);
   return 0;
 }
 
 int set_value(int key, char *value1, int N_value2, double *V_value2) {
-  mqd_t q_servidor; /* cola de mensajes del servidor */
-  mqd_t q_cliente;  /* cola de mensajes del cliente */
-
   struct peticion pet;
   struct respuesta res; /* respuesta de la operación */
   struct mq_attr attr;  // Declare the 'attr' variable here
@@ -100,18 +94,12 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 
 
   sprintf(colalocal,  "/Cola-%d", getpid());
-  q_cliente = mq_open(colalocal, O_CREAT|O_RDONLY, 0700, &attr);
-  if (q_cliente == -1) {
-    perror("mq_open CLIENTE");
-    return -1;
-  }
-
-  q_servidor = mq_open("/SERVIDOR_CLAVES", O_CREAT | O_WRONLY, 0700, NULL);
-  if (q_servidor == -1) {
-    mq_close(q_cliente);
-    perror("mq_open SERVIDOR");
-    return -1;
-  }
+  sock = clientSocket(SERVER_ADDRESS, PORT);
+    if (sock < 0) {
+        perror("Client socket failed");
+        exit(EXIT_FAILURE);
+    }
+  // Validación de datos
   if (strlen(value1) >256){//256 en vez de 255 pq incluimos en /0
     return -1;
   }
@@ -119,7 +107,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
     return -1;
   }
 
-  // RELLENAMOS EL MENSAJE
+  // RELLENAMOS EL MENSAJE cambiar a el uso de la funcion estatica
   strcpy(pet.q_name, colalocal);
   pet.op = 1;
   pet.key = key;
@@ -133,22 +121,21 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
   }
   strcpy(pet.V_value2, cadena);
 
+
   // ENVIAMOS EL MENSAJE
-  if (mq_send(q_servidor, (const char *)&pet, sizeof(pet), 0) < 0) {
-    perror("mq_send");
-    return -1;
-  }
+  if (sendMessage(sock, (char *)&request, sizeof(struct peticion)) < 0) {
+        perror("Send request failed");
+        exit(EXIT_FAILURE);
+    }
 
   // RECIBIMOS EL MENSAJE
-  if (mq_receive(q_cliente, (char *)&res, sizeof(int), 0) < 0) {
-    perror("mq_recv");
-    return -1;
-  }
-
+  i if (recvMessage(sock, (char *)&response, sizeof(struct respuesta)) < 0) {
+        perror("Receive response failed");
+        exit(EXIT_FAILURE);
+    }
+  printf("Resultado recibido del servidor: %d\n", response.resultado);
   // CERRAMOS LAS COLAS
-  mq_close(q_servidor);
-  mq_close(q_cliente);
-  mq_unlink(colalocal);
+  close(sock);
   return 0;
 }
 
