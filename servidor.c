@@ -15,10 +15,7 @@ mqd_t q_servidor;
 
 
 void tratar_mensaje(void *sc) {
-  char mess[sizeof(struct peticion)]; /* mensaje recibido del cliente  */
-  struct peticion mensaje; /* mensaje local */
-  mqd_t q_cliente;         /* cola del cliente */
-  struct respuesta res; 
+  char cadena[256]; /* mensaje recibido del cliente  */ 
   int longitud;
 
   /* el thread copia el mensaje a un mensaje local  */
@@ -29,10 +26,11 @@ void tratar_mensaje(void *sc) {
     }
 
   //mensaje = (*(struct peticion *)mess);
-  if (recvMessage(sc, (char *)&mess, longitud) == -1) {
+  if (recvMessage(sc, (char *)&cadena, longitud) == -1) {
       perror("error al recvMessage");
       return -1;
     }
+  printf("Mensaje recibido: %s\n", cadena);
 
   /* ya se puede despertar al servidor*/
   mensaje_no_copiado = false;
@@ -40,35 +38,38 @@ void tratar_mensaje(void *sc) {
   pthread_cond_signal(&cond_mensaje);
 
   pthread_mutex_unlock(&mutex_mensaje);
-  /*Podemos enviar una sola string y deshacerla con:
-    // Tokenizar la cadena
-    token = strtok(cadena, "/");
-    if (token != NULL) {
-        op = token[0]; // La primera letra como operación
-    }
 
-    token = strtok(NULL, "/");
-    if (token != NULL) {
-        strcpy(value1, token); // Copiar el segundo token como value1
-    }
+  // Tokenizar la cadena
+  token = strtok(cadena, "/");
+  if (token != NULL) {
+      op = token[0]; // La primera letra como operación
+  }
+  token = strtok(NULL, "/");
+  if (token != NULL) {
+      strcpy(key, token); // Copiar el segundo token como key
+  }
+  token = strtok(NULL, "/");
+  if (token != NULL) {
+      strcpy(value1, token); // Copiar el segundo token como value1
+  }
 
-    token = strtok(NULL, "/");
-    if (token != NULL) {
-        N_Value2 = atoi(token); // Convertir el tercer token a entero como N_Value2
-    }
+  token = strtok(NULL, "/");
+  if (token != NULL) {
+      N_Value2 = atoi(token); // Convertir el tercer token a entero como N_Value2
+  }
 
-    token = strtok(NULL, "/");
-    if (token != NULL) {
-        // Convertir el cuarto token en un array de números flotantes
-        char *subtoken;
-        int i = 0;
-        subtoken = strtok(token, "-");
-        while (subtoken != NULL && i < 4) {
-            V_Value2[i++] = atof(subtoken); // Convertir cada subtoken a flotante
-            subtoken = strtok(NULL, "-");
-        }
-    }
-*/
+  token = strtok(NULL, "/");
+  if (token != NULL) {
+      // Convertir el cuarto token en un array de números flotantes
+      char *subtoken;
+      int i = 0;
+      subtoken = strtok(token, "-");
+      while (subtoken != NULL && i < 4) {
+          V_Value2[i++] = atof(subtoken); // Convertir cada subtoken a flotante
+          subtoken = strtok(NULL, "-");
+      }
+  }
+
 
   /* ejecutar la petición del cliente y preparar respuesta */
   /*Aqui habra que cambiar dependiendo de como pasemos el mensaje*/

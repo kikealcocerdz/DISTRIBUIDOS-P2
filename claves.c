@@ -41,16 +41,16 @@ char cadena[100]; // Tamaño suficiente para almacenar la cadena final
 
 int init() {
 
-  struct peticion pet;
-  struct respuesta res; /* respuesta de la operación */
-  struct mq_attr attr;  
   char colalocal[MAXSIZE]; 
   attr.mq_maxmsg = 10;     
 	attr.mq_msgsize = sizeof(int);
+  char request [MAXSIZE];
+  char response [MAXSIZE];
 
   // CREACION DE LA COLA DE MENSAJES, PONGO EL PID POR SI HAY VARIOS CLIENTES A LA VEZ
 
-	sprintf(colalocal,  "/Cola-%d", getpid());
+	//sprintf(colalocal,  "/Cola-%d", getpid());
+
   sock = clientSocket(SERVER_ADDRESS, PORT);
     if (sock < 0) {
         perror("Client socket failed");
@@ -72,6 +72,10 @@ int init() {
     }
 
   // RECIBIMOS EL MENSAJE
+  if (recvMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+        perror("Receive response failed");
+        exit(EXIT_FAILURE);
+    }
  if (recvMessage(sock, (char *)&response, sizeof(struct respuesta)) < 0) {
         perror("Receive response failed");
         exit(EXIT_FAILURE);
