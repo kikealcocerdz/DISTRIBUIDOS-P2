@@ -70,8 +70,8 @@ int init() {
     char response[MAXSIZE];
 
     // Relleno del mensaje
-    double aux[MAXSIZE] = { 1.1 };
-    strcpy(request, create_message(0, -1, NULL, 1, aux)); 
+    double aux[MAXSIZE] = { 1.1, 2.2 };
+    strcpy(request, create_message(0, -1, NULL, 3, aux)); 
 
     printf("Mensaje a enviar: %s\n", request);
     int longitud = strlen(request);

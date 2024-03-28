@@ -11,27 +11,31 @@
 pthread_mutex_t mutex_mensaje;
 int mensaje_no_copiado = true;
 pthread_cond_t cond_mensaje;
-char op, key, value1, N_Value2, V_Value2;
+int ret, longitud;
+char op;
+char key[256], value1[256]; 
+char cadena[256]; 
+float V_Value2[256]; 
+int N_Value2;
 char res[256];
-int ret, sc;
 
 void tratar_mensaje(void *sc) {
-  char cadena[256]; /* mensaje recibido del cliente  */ 
-  int longitud;
 
   /* el thread copia el mensaje a un mensaje local  */
   pthread_mutex_lock(&mutex_mensaje);
   printf("sc tiene valor: %d\n", *(int *)sc);
-  if (recvMessage(sc, (char *)&longitud, sizeof(int)) == -1) {
-      perror("error al recvMessage");
-      return -1;
-    }
 
-  //mensaje = (*(struct peticion *)mess);
-  if (recvMessage(sc, (char *)&cadena, longitud) == -1) {
-      perror("error al recvMessage");
+  if (recvMessage(sc, (char *)&longitud, sizeof(int)) == -1) {
+      perror("error al recvMessage 1");
       return -1;
-    }
+  }
+  printf("Longitud: %d\n", longitud);
+
+  if (recvMessage(sc, (char *)&cadena, longitud) == -1) {
+      perror("error al recvMessage 2");
+      return -1;
+  }
+
   printf("Mensaje recibido: %s\n", cadena);
 
   /* ya se puede despertar al servidor*/
@@ -42,40 +46,41 @@ void tratar_mensaje(void *sc) {
   pthread_mutex_unlock(&mutex_mensaje);
 
   // Tokenizar la cadena
+  
   char *token;
+  printf("Mensaje recibido: %s\n", cadena);
+
   token = strtok(cadena, "/");
   if (token != NULL) {
-      op = token[0]; // La primera letra como operación
-  }
-  token = strtok(NULL, "/");
-  if (token != NULL) {
-      strcpy(key, token); // Copiar el segundo token como key
-  }
-  token = strtok(NULL, "/");
-  if (token != NULL) {
-      strcpy(value1, token); // Copiar el segundo token como value1
+      op = token[0]; 
   }
 
   token = strtok(NULL, "/");
   if (token != NULL) {
-      N_Value2 = token; // Convertir el tercer token a entero como N_Value2
+      strcpy(key, token); 
   }
 
   token = strtok(NULL, "/");
   if (token != NULL) {
-      // Convertir el cuarto token en un array de números flotantes
-      char *subtoken;
-      int i = 0;
-      subtoken = strtok(token, "-");
-      while (subtoken != NULL && i < N_Value2) {
-          float V_Value2[N_Value2];
-          while (subtoken != NULL && i < N_Value2) {
-            V_Value2[i++] = atof(subtoken); // Convert each subtoken to float
-            subtoken = strtok(NULL, "-");
-          }
-          subtoken = strtok(NULL, "-");
-      }
+      strcpy(value1, token); 
   }
+
+  token = strtok(NULL, "/");
+  if (token != NULL) {
+      N_Value2 = atoi(token); 
+  }
+
+  token = strtok(NULL, "/");
+  if (token != NULL) {
+      strcpy(V_Value2, token); 
+  }
+
+  printf("Operación: %c\n", op);
+  printf("Key: %s\n", key);
+  printf("Value1: %s\n", value1);
+  printf("N_Value2: %d\n", N_Value2);
+  printf("V_Value2: %s\n", V_Value2);
+  printf("\n");
 
 
   /* ejecutar la petición del cliente y preparar respuesta */
@@ -104,6 +109,7 @@ void tratar_mensaje(void *sc) {
   }
   printf("Resultado: %d de la función %d \n", &res, op);
   longitud = strlen(res);
+  printf("Resultado: %s de la función %d \n", res, op);
   /* Se devuelve el resultado al cliente */
   /* Para ello se envía el resultado a su cola */
   ret = sendMessage(sc, (char *)&longitud, sizeof(int));
@@ -121,7 +127,7 @@ void tratar_mensaje(void *sc) {
   pthread_exit(0);
 }
 
-int main(void) {
+int main() {
   int sd, sc;
   pthread_attr_t t_attr; // atributos de los threads
   pthread_t thid;
