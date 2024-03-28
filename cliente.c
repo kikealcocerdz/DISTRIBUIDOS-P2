@@ -1,5 +1,4 @@
 #include "claves.h"
-#include "mensaje.h"
 #include <fcntl.h>
 #include <mqueue.h>
 #include <stdio.h>
@@ -14,6 +13,7 @@ int main() {
   int num_clients = 3;
   init();
   sleep(1); 
+  /*
   for (int i = 0; i < num_clients; i++) {
     pid_t pid = fork();
 
@@ -57,6 +57,6 @@ int main() {
   for (int i = 0; i < num_clients; i++) {
     wait(NULL);
   }
-
+  */
   return 0;
 }
