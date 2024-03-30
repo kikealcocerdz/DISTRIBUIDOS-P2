@@ -15,9 +15,9 @@ pthread_cond_t cond_mensaje;
 void tratar_mensaje(void *arg) {
     int sc = *(int *)arg;
     int ret, longitud;
-    char op;
-    char value1[256], cadena[256], res[256];
-    char V_Value2[256];
+    char op='\0';
+    char value1[256]="", cadena[256]="", res[256]="";
+    char V_Value2[256]="";
     int N_Value2, key;
 
     pthread_mutex_lock(&mutex_mensaje);

@@ -67,7 +67,7 @@ int init() {
     }
 
     char request[MAXSIZE];
-    char response[MAXSIZE];
+    char response[MAXSIZE]="";
 
     // Relleno del mensaje
     double aux[MAXSIZE] = { 1.1, 2.2 };
@@ -120,7 +120,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
     }
 
     char request[MAXSIZE];
-    char response[MAXSIZE];
+    char response[MAXSIZE]="";
 
     // Validación de datos
     if (strlen(value1) > 256) { // 256 en vez de 255 pq incluimos en /0
@@ -166,6 +166,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
         exit(EXIT_FAILURE);
     }
     printf("Longitud del servidor: %d\n", longitud);
+    printf("Antes de recibir mensaje response vale %s\n", response);
 
     if (recvMessage(sock, (char *)&response, longitud) < 0) {
         perror("Receive response failed");
@@ -188,7 +189,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
     }
 
     char request[MAXSIZE];
-    char response[MAXSIZE];
+    char response[MAXSIZE]="";
 
     // Validación de datos
     if (strlen(value1) > 256) {
@@ -260,7 +261,7 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
     }
 
     char request[MAXSIZE];
-    char response[MAXSIZE];
+    char response[MAXSIZE]="";
 
     // Validación de datos
     if (strlen(value1) > 256) {
@@ -332,7 +333,7 @@ int delete_key(int key) {
     }
 
     char request[MAXSIZE];
-    char response[MAXSIZE];
+    char response[MAXSIZE]="";
 
     // Relleno del mensaje
     strcpy(request, create_message(4, key, NULL, 0, NULL));
@@ -388,7 +389,7 @@ int exist(int key) {
     }
 
     char request[MAXSIZE];
-    char response[MAXSIZE];
+    char response[MAXSIZE]="";
 
     // Relleno del mensaje
     strcpy(request, create_message(5, key, NULL, 0, NULL));
