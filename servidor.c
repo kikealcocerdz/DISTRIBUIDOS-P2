@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <netinet/in.h>
+#include <stdlib.h>
 #include "comm.h"
 
 pthread_mutex_t mutex_mensaje;
@@ -15,9 +16,9 @@ void tratar_mensaje(void *arg) {
     int sc = *(int *)arg;
     int ret, longitud;
     char op;
-    char key[256], value1[256], cadena[256], res[256];
+    char value1[256], cadena[256], res[256];
     float V_Value2[256];
-    int N_Value2;
+    int N_Value2, key;
 
     pthread_mutex_lock(&mutex_mensaje);
 
@@ -50,7 +51,7 @@ void tratar_mensaje(void *arg) {
 
     token = strtok(NULL, "/");
     if (token != NULL) {
-        strcpy(key, token); 
+        key = atoi(token); 
     }
 
     token = strtok(NULL, "/");
@@ -75,10 +76,23 @@ void tratar_mensaje(void *arg) {
             init_serv(res);
             break;
         case '1':
-            set_value_serv(key, value1, N_Value2, V_Value2, res);
+            set_value_serv(key, *value1, N_Value2, V_Value2, res);
             break;
-        // otros casos aquí...
-
+        case '2':
+            get_value_serv(atoi(key), *value1, &N_Value2, V_Value2, res);
+            break;
+        case '3':
+            modify_value_serv(atoi(key), value1, N_Value2, V_Value2, res);
+            break;
+        case '4':
+            delete_value_serv(atoi(key), res);
+            break;
+        case '5':
+            exists_serv(atoi(key), res);
+            break;
+        default:
+            strcpy(res, "Operación no válida");
+            break;
     }
 
     printf("Resultado: %s de la función %c\n", res, op);

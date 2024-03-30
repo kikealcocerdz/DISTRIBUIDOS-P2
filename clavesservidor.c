@@ -54,14 +54,13 @@ void set_value_serv(int key, char *value1, int N_value2, char *V_value2, char *r
     FILE *checkExistFile = fopen(filename, "r");
     if (checkExistFile != NULL) {
         fclose(checkExistFile);
-        printf("Error\n");
+        printf("Archivo existía \n");
         return;
     }
     
     FILE *clavesFile = fopen(filename, "w+");
     if (clavesFile == NULL) {
         perror("Error al abrir el archivo");
-        printf("Error\n");
         return;
     }
 
@@ -69,7 +68,7 @@ void set_value_serv(int key, char *value1, int N_value2, char *V_value2, char *r
     fprintf(clavesFile, "%d %s %d %s", key, value1, N_value2, V_value2); 
     fprintf(clavesFile, "\n"); 
     fclose(clavesFile);
-    printf("All good\n");
+    printf("%d %s %d %s", key, value1, N_value2, V_value2); 
     return;
 }
 

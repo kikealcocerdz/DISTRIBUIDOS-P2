@@ -1,5 +1,3 @@
-
-/*
 int set_value(int key, char *value1, int N_value2, double *V_value2) {
   struct peticion pet;
   struct respuesta res; /* respuesta de la operación */
@@ -241,4 +239,3 @@ int exist(int key) {
   mq_unlink(colalocal);
   return 0;
 }
-*/

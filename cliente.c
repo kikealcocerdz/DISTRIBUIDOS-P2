@@ -10,16 +10,14 @@
 
 
 int main() {
-  int num_clients = 3;
+  int num_clients = 1;
   init();
   sleep(1); 
-  /*
   for (int i = 0; i < num_clients; i++) {
     pid_t pid = fork();
 
     if (pid == 0) {
       // Código del cliente
-      int key = getpid() + i; 
       char value1[20]; 
       sprintf(value1, "%d", getpid()); 
       int N_value2 = 3;
@@ -29,15 +27,14 @@ int main() {
       printf("Cliente %d\n", getpid());
       // Ejecución diferente para cada cliente
       if (i == 0) {
-        set_value(1, value1, N_value2, V_value2);
+        init();
+        set_value(1, "buenos días", N_value2, V_value2);
+        get_value(1, value1, &N_value2, V_value2);
+        modify_value(1, "ModificadoPorCliente", N_value2, V_value2);
         sleep(1); 
-        set_value(2, value1, N_value2, V_value2);
-        sleep(1); 
-        set_value(3, value1, N_value2, V_value2);
-        sleep(1); 
-        delete_key(2);
         return 0;
       }
+      /*
       if (i == 1) {
         // Ejecución para el segundo cliente
         get_value(1, value1, &N_value2, V_value2);
@@ -50,6 +47,7 @@ int main() {
         exist(4);
         return 0; 
       }
+      */
     }
   }
 
@@ -57,6 +55,5 @@ int main() {
   for (int i = 0; i < num_clients; i++) {
     wait(NULL);
   }
-  */
   return 0;
 }
