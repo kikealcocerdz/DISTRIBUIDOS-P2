@@ -17,7 +17,7 @@ void tratar_mensaje(void *arg) {
     int ret, longitud;
     char op;
     char value1[256], cadena[256], res[256];
-    float V_Value2[256];
+    char V_Value2[256];
     int N_Value2, key;
 
     pthread_mutex_lock(&mutex_mensaje);
@@ -35,7 +35,7 @@ void tratar_mensaje(void *arg) {
         return;
     }
 
-    printf("Mensaje recibido: %s\n", cadena);
+    printf("Mensaje recibido1: %s\n", cadena);
 
     mensaje_no_copiado = false;
     pthread_cond_signal(&cond_mensaje);
@@ -43,52 +43,57 @@ void tratar_mensaje(void *arg) {
 
     char *token;
     printf("Mensaje recibido: %s\n", cadena);
-
+    printf("LLego hasta aqui\n");
     token = strtok(cadena, "/");
     if (token != NULL) {
         op = token[0]; 
     }
+    printf("Operación: %c\n", op);
 
     token = strtok(NULL, "/");
     if (token != NULL) {
         key = atoi(token); 
     }
+    printf("Key: %d\n", key);
 
     token = strtok(NULL, "/");
     if (token != NULL) {
         strcpy(value1, token); 
     }
+    printf("Value1: %s\n", value1);
 
     token = strtok(NULL, "/");
     if (token != NULL) {
         N_Value2 = atoi(token); 
     }
+    printf("N_Value2: %d\n", N_Value2);
 
-    for (int i = 0; i < N_Value2; i++) {
-        token = strtok(NULL, "/");
-        if (token != NULL) {
-            V_Value2[i] = atof(token); 
-        }
+    token = strtok(NULL, "/");
+    if (token != NULL) {
+        strcpy(V_Value2, token); 
     }
+    printf("V_Value2: %s\n", V_Value2);
 
     switch (op) {
         case '0':
             init_serv(res);
             break;
         case '1':
-            set_value_serv(key, *value1, N_Value2, V_Value2, res);
+            printf("Entramos a set_value_serv\n");
+            set_value_serv(key, value1, N_Value2, V_Value2, res);
             break;
         case '2':
-            get_value_serv(atoi(key), *value1, &N_Value2, V_Value2, res);
+            get_value_serv(key, value1, &N_Value2, V_Value2, res);
             break;
         case '3':
-            modify_value_serv(atoi(key), value1, N_Value2, V_Value2, res);
+            modify_value_serv(key, value1, N_Value2, V_Value2, res);
             break;
         case '4':
-            delete_value_serv(atoi(key), res);
+            delete_value_serv(key, res);
             break;
         case '5':
-            exists_serv(atoi(key), res);
+            exists_serv(key, res);
+            printf("Key existe\n");
             break;
         default:
             strcpy(res, "Operación no válida");
@@ -98,6 +103,7 @@ void tratar_mensaje(void *arg) {
     printf("Resultado: %s de la función %c\n", res, op);
 
     longitud = strlen(res);
+    printf("Longitud: %d\n", longitud);
 
     ret = sendMessage(sc, (char *)&longitud, sizeof(int));
     if (ret == -1) {

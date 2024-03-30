@@ -12,7 +12,21 @@
 int main() {
   int num_clients = 1;
   init();
-  sleep(1); 
+  sleep(1);
+  int N_value2 = 3;
+  double V_value2[] = {1.0, 2.0, 3.0}; 
+  char aux[20];
+
+  set_value(1, "adios", N_value2, V_value2);
+  sleep(3);
+  get_value(1, aux, &N_value2, V_value2);
+  sleep(3);
+  modify_value(1, "ModificadoPorCliente", N_value2, V_value2);
+  sleep(3);
+  delete_key(1);
+  sleep(3);
+  exist(1);
+/*
   for (int i = 0; i < num_clients; i++) {
     pid_t pid = fork();
 
@@ -48,8 +62,8 @@ int main() {
         return 0; 
       }
       */
-    }
-  }
+    
+  
 
   // Esperar a que todos los clientes terminen
   for (int i = 0; i < num_clients; i++) {

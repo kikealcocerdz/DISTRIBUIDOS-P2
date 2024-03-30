@@ -86,7 +86,7 @@ int init() {
 
     printf("Hemos enviado longitud\n");
 
-    if (sendMessage(sock, request, longitud) < 0) {
+    if (sendMessage(sock, (char *)&request, longitud) < 0) {
         perror("Send request failed");
         exit(EXIT_FAILURE);
     }
@@ -98,8 +98,8 @@ int init() {
         perror("Receive response failed");
         exit(EXIT_FAILURE);
     }
-
-    if (recvMessage(sock, response, longitud) < 0) {
+    printf("Longitud del servidor: %d\n", longitud);
+    if (recvMessage(sock, (char *)&response, longitud) < 0) {
         perror("Receive response failed");
         exit(EXIT_FAILURE);
     }
@@ -153,7 +153,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 
     printf("Hemos enviado longitud\n");
 
-    if (sendMessage(sock, request, longitud) < 0) {
+    if (sendMessage(sock, (char *)&request, longitud) < 0) {
         perror("Send request failed");
         exit(EXIT_FAILURE);
     }
@@ -165,8 +165,9 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
         perror("Receive response failed");
         exit(EXIT_FAILURE);
     }
+    printf("Longitud del servidor: %d\n", longitud);
 
-    if (recvMessage(sock, response, longitud) < 0) {
+    if (recvMessage(sock, (char *)&response, longitud) < 0) {
         perror("Receive response failed");
         exit(EXIT_FAILURE);
     }
@@ -199,7 +200,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
         return -1;
     }
 
-    // Relleno del mensaje
+    // Relleno del mensaje,este da igual lo que le pasemos en value1,N_value2 y V_value2,ya que queremos que nos lo devuelva el servidor
     strcpy(request, create_message(2, key, value1, *N_value2, V_value2));
 
     printf("Mensaje a enviar: %s\n", request);
@@ -215,7 +216,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 
     printf("Hemos enviado longitud\n");
 
-    if (sendMessage(sock, request, longitud) < 0) {
+    if (sendMessage(sock, (char *)&request, longitud) < 0) {
         perror("Send request failed");
         close(sock);
         return -1;
@@ -229,17 +230,22 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
         close(sock);
         return -1;
     }
+    printf("Longitud del servidor: %d\n", longitud);
 
-    if (recvMessage(sock, response, longitud) < 0) {
+    if (recvMessage(sock, (char *)&response, longitud) < 0) {
         perror("Receive response failed");
         close(sock);
         return -1;
     }
 
     printf("Resultado recibido del servidor: %s\n", response);
+    //Aqui va la funcion que se encarga de separar el mensaje respuesta y almacenar los valores en las variables correspondientes
+    //TODO
 
     // Cierre del socket
     close(sock);
+    //Hay que devolver los valores que se necesitan(Creo que lo hicimos mal en el anterior...)
+
     return 0;
 }
 
@@ -288,7 +294,7 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 
     printf("Hemos enviado longitud\n");
 
-    if (sendMessage(sock, request, longitud) < 0) {
+    if (sendMessage(sock, (char *)&request, longitud) < 0) {
         perror("Send request failed");
         close(sock);
         return -1;
@@ -302,8 +308,9 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
         close(sock);
         return -1;
     }
+    printf("Longitud del servidor: %d\n", longitud);
 
-    if (recvMessage(sock, response, longitud) < 0) {
+    if (recvMessage(sock, (char *)&response, longitud) < 0) {
         perror("Receive response failed");
         close(sock);
         return -1;
@@ -343,7 +350,7 @@ int delete_key(int key) {
 
     printf("Hemos enviado longitud\n");
 
-    if (sendMessage(sock, request, longitud) < 0) {
+    if (sendMessage(sock, (char *)&request, longitud) < 0) {
         perror("Send request failed");
         close(sock);
         return -1;
@@ -357,8 +364,9 @@ int delete_key(int key) {
         close(sock);
         return -1;
     }
+    printf("Longitud del servidor: %d\n", longitud);
 
-    if (recvMessage(sock, response, longitud) < 0) {
+    if (recvMessage(sock, (char *)&response, longitud) < 0) {
         perror("Receive response failed");
         close(sock);
         return -1;
@@ -398,7 +406,7 @@ int exist(int key) {
 
     printf("Hemos enviado longitud\n");
 
-    if (sendMessage(sock, request, longitud) < 0) {
+    if (sendMessage(sock, (char *)&request, longitud) < 0) {
         perror("Send request failed");
         close(sock);
         return -1;
@@ -412,8 +420,9 @@ int exist(int key) {
         close(sock);
         return -1;
     }
+    printf("Longitud del servidor: %d\n", longitud);
 
-    if (recvMessage(sock, response, longitud) < 0) {
+    if (recvMessage(sock, (char *)&response, longitud) < 0) {
         perror("Receive response failed");
         close(sock);
         return -1;

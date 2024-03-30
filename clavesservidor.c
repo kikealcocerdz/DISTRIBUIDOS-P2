@@ -69,6 +69,7 @@ void set_value_serv(int key, char *value1, int N_value2, char *V_value2, char *r
     fprintf(clavesFile, "\n"); 
     fclose(clavesFile);
     printf("%d %s %d %s", key, value1, N_value2, V_value2); 
+    sprintf(res, "0");
     return;
 }
 
@@ -90,11 +91,9 @@ void get_value_serv(int key, char *value1, int *N_value2, char *V_value2, char *
 
     fclose(clavesFile);
     printf("All good\n");
-    /*
-    strcpy(res->value1, value1);
-    res->N_value2 = *N_value2;
-    strcpy(res->V_value2, V_value2);
-    */
+    
+    sprintf(res, "0/%s/%d/%s", value1, *N_value2, V_value2);
+    
     return;
 }
 
@@ -114,6 +113,7 @@ void delete_value_serv(int key, char *res) {
     }
 
     printf("All good\n");
+    sprintf(res, "0");
     return;
 }
 
@@ -141,6 +141,7 @@ void exists_serv(int key, char*res) {
         if (key_leida == key) {
             fclose(clavesFile);
             printf("Key existe\n");
+            sprintf(res, "1");
             return;
         }
     }

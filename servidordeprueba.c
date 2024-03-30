@@ -10,6 +10,7 @@ int servicio ( int sc )
         int32_t a, b, res;
         char mensaje[100];
         int longitud;
+        
         ret = recvMessage(sc, (char *) &longitud, sizeof(int)); // recibe longitud
         if (ret == -1) {
             printf("Error en recepción longitud\n");
