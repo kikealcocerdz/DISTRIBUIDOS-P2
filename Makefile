@@ -1,20 +1,35 @@
+.PHONY: all clean run cliente servidor
+
+SOURCE_DIR := source
+
 all: cliente servidor
 
-cliente: cliente.c libclaves.so
-	gcc cliente.c comm.c -L. -lclaves -o cliente
+cliente: $(SOURCE_DIR)/cliente.c $(SOURCE_DIR)/libclaves.so
+	gcc $(SOURCE_DIR)/cliente.c $(SOURCE_DIR)/comm.c -L$(SOURCE_DIR) -lclaves -o cliente
 
-servidor: clavesservidor.c servidor.c libclaves.so
-	gcc clavesservidor.c comm.c servidor.c -L. -lclaves -o servidor
+servidor: $(SOURCE_DIR)/clavesservidor.c $(SOURCE_DIR)/servidor.c $(SOURCE_DIR)/libclaves.so
+	gcc $(SOURCE_DIR)/clavesservidor.c $(SOURCE_DIR)/comm.c $(SOURCE_DIR)/servidor.c -L$(SOURCE_DIR) -lclaves -o servidor
 
-libclaves.so: claves.o
-	gcc -shared -o libclaves.so claves.o
+$(SOURCE_DIR)/libclaves.so: $(SOURCE_DIR)/claves.o
+	gcc -shared -o $(SOURCE_DIR)/libclaves.so $(SOURCE_DIR)/claves.o
 
-claves.o: claves.c
-	gcc -c -fPIC claves.c -o claves.o
+$(SOURCE_DIR)/claves.o: $(SOURCE_DIR)/claves.c
+	gcc -c -fPIC $(SOURCE_DIR)/claves.c -o $(SOURCE_DIR)/claves.o
 
 clean:
-	rm -f claves.o libclaves.so cliente servidor
+	rm -f $(SOURCE_DIR)/claves.o $(SOURCE_DIR)/libclaves.so cliente servidor
 	rm -f /dev/mqueue/*
-	
+
 run:
-	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/source/libclaves.so
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./servidor
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./cliente
+
+run-cliente: cliente
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./cliente
+
+run-servidor: servidor
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./servidor
+
+run:
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./servidor
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./cliente
