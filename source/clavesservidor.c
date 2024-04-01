@@ -35,16 +35,18 @@ void init_serv(char *res) {
         // Eliminar el directorio /claves
         if (remove("./claves") == -1) {
             printf("Error al eliminar ./claves\n");
+            sprintf(res, "-1");
             return; 
         }
     }
     // Crear el directorio /claves
     if (mkdir("./claves", 0777) == -1) {
         printf("Error al eliminar ./claves\n");
+        sprintf(res, "-1");
         return;  
     }
 
-    printf("Init fine");
+    sprintf(res, "0");
     return; 
 }
 
@@ -54,13 +56,15 @@ void set_value_serv(int key, char *value1, int N_value2, char *V_value2, char *r
     FILE *checkExistFile = fopen(filename, "r");
     if (checkExistFile != NULL) {
         fclose(checkExistFile);
-        printf("Archivo existía \n");
+        perror("Clave utilizada previamente, escoja otra \n");
+        sprintf(res, "-1");
         return;
     }
     
     FILE *clavesFile = fopen(filename, "w+");
     if (clavesFile == NULL) {
         perror("Error al abrir el archivo");
+        sprintf(res, "-1");
         return;
     }
 
@@ -78,7 +82,7 @@ void get_value_serv(int key, char *value1, int *N_value2, char *V_value2, char *
     sprintf(filename, "./claves/%d.txt", key);
     FILE *clavesFile = fopen(filename, "r");
     if (clavesFile == NULL) {
-        printf("Error\n");
+        sprintf(res, "-1");
         return;
     }
 
@@ -86,14 +90,12 @@ void get_value_serv(int key, char *value1, int *N_value2, char *V_value2, char *
     if (fscanf(clavesFile, "%d %s %d %s", &key, value1, N_value2, V_value2) != 4) {
         fclose(clavesFile);
         printf("Error\n");
+        sprintf(res, "-1");
         return;
     }
 
     fclose(clavesFile);
-    printf("All good\n");
-    
     sprintf(res, "0/%s/%d/%s", value1, *N_value2, V_value2);
-    
     return;
 }
 
@@ -103,28 +105,23 @@ void delete_value_serv(int key, char *res) {
 
     // Verificar si el archivo existe
     if (access(filename, F_OK) != 0) {
-        printf("Error\n");
+        sprintf(res, "-1");
         return;
     }
 
     if (unlink(filename) == -1) {
-        printf("Error\n");
+        sprintf(res, "-1");
         return;
     }
 
-    printf("All good\n");
     sprintf(res, "0");
     return;
 }
 
 void modify_value_serv(int key, char *value1, int N_value2, char *V_value2, char *res) {
+    
     delete_value_serv(key, res);
-    // Llamar a set_value_serv para crear un nuevo archivo con el nuevo valor
     set_value_serv(key, value1, N_value2, V_value2, res);
-    printf("All good\n");
-    /*
-    res->N_value2 = N_value2;
-    */
     return;
 }
 
@@ -134,7 +131,7 @@ void exists_serv(int key, char*res) {
 
     FILE *clavesFile = fopen(filename, "r");
     if (clavesFile == NULL) {
-        printf("All good\n");
+        sprintf(res, "0");
         return;
     }
     while (fscanf(clavesFile, "%d %s %d", &key_leida, valor1, &N_value2) == 3) {
@@ -147,6 +144,6 @@ void exists_serv(int key, char*res) {
     }
     
     fclose(clavesFile);
-    printf("Error\n");
+    sprintf(res, "-1");
     return;
 }

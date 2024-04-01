@@ -27,7 +27,6 @@ void tratar_mensaje(void *arg) {
         pthread_mutex_unlock(&mutex_mensaje);
         return;
     }
-    printf("Longitud: %d\n", longitud);
 
     if (recvMessage(sc, (char *)&cadena, longitud) == -1) {
         perror("error al recvMessage 2");
@@ -35,51 +34,42 @@ void tratar_mensaje(void *arg) {
         return;
     }
 
-    printf("Mensaje recibido1: %s\n", cadena);
 
     mensaje_no_copiado = false;
     pthread_cond_signal(&cond_mensaje);
     pthread_mutex_unlock(&mutex_mensaje);
 
     char *token;
-    printf("Mensaje recibido: %s\n", cadena);
-    printf("LLego hasta aqui\n");
     token = strtok(cadena, "/");
     if (token != NULL) {
         op = token[0]; 
     }
-    printf("Operación: %c\n", op);
 
     token = strtok(NULL, "/");
     if (token != NULL) {
         key = atoi(token); 
     }
-    printf("Key: %d\n", key);
 
     token = strtok(NULL, "/");
     if (token != NULL) {
         strcpy(value1, token); 
     }
-    printf("Value1: %s\n", value1);
 
     token = strtok(NULL, "/");
     if (token != NULL) {
         N_Value2 = atoi(token); 
     }
-    printf("N_Value2: %d\n", N_Value2);
 
     token = strtok(NULL, "/");
     if (token != NULL) {
         strcpy(V_Value2, token); 
     }
-    printf("V_Value2: %s\n", V_Value2);
 
     switch (op) {
         case '0':
             init_serv(res);
             break;
         case '1':
-            printf("Entramos a set_value_serv\n");
             set_value_serv(key, value1, N_Value2, V_Value2, res);
             break;
         case '2':
@@ -93,28 +83,22 @@ void tratar_mensaje(void *arg) {
             break;
         case '5':
             exists_serv(key, res);
-            printf("Key existe\n");
             break;
         default:
             strcpy(res, "Operación no válida");
             break;
     }
 
-    printf("Resultado: %s de la función %c\n", res, op);
 
     longitud = strlen(res);
-    printf("Longitud: %d\n", longitud);
-
     ret = sendMessage(sc, (char *)&longitud, sizeof(int));
     if (ret == -1) {
-        printf("Error en envío\n");
         pthread_mutex_unlock(&mutex_mensaje);
         return;
     }
 
     ret = sendMessage(sc, res, longitud);
     if (ret == -1) {
-        printf("Error en envío\n");
         pthread_mutex_unlock(&mutex_mensaje);
         return;
     }
