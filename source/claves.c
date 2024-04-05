@@ -37,9 +37,7 @@ int initialize_env_variables() {
     }
 }
 
-static char *create_message(int op, int key, char *value1, int N_Value2, double *V_Value2) {
-    char *cadena = (char *)malloc(MAXSIZE * sizeof(char)); // Reservar memoria para la cadena
-
+static void create_message(int op, int key, char *value1, int N_Value2, double *V_Value2, char *cadena) {
     // Verificar si se pudo reservar memoria
     if (cadena == NULL) {
         perror("Malloc failed");
@@ -77,8 +75,7 @@ static char *create_message(int op, int key, char *value1, int N_Value2, double 
             }
         }
     }
-
-    return cadena;
+    return;
 }
 
 int init() {
@@ -95,7 +92,7 @@ int init() {
 
     // Relleno del mensaje
     double aux[MAXSIZE] = { 0.0 };
-    strcpy(request, create_message(0, -1, NULL, 1, aux)); 
+    create_message(0, -1, NULL, 1, aux, request); 
 
 
     if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
@@ -145,7 +142,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
         sprintf(request, "%lf ", V_value2[i]);
         strcat(cadena, request);
     }
-    strcpy(request, create_message(1, key, value1, N_value2, V_value2));
+    create_message(1, key, value1, N_value2, V_value2, request);
 
     // Envío del mensaje
     if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
@@ -190,7 +187,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 
     // Relleno del mensaje, este da igual lo que le pasemos en value1, N_value2 y V_value2,
     // ya que queremos que nos lo devuelva el servidor
-    strcpy(request, create_message(2, key, value1, *N_value2, V_value2));
+    create_message(2, key, value1, *N_value2, V_value2, request);
 
     // Envío del mensaje
     if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
@@ -284,7 +281,7 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
         sprintf(request, "%lf ", V_value2[i]);
         strcat(cadena, request);
     }
-    strcpy(request, create_message(3, key, value1, N_value2, V_value2));
+    create_message(3, key, value1, N_value2, V_value2, request);
 
     // Enviamos el mensaje
     if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
@@ -319,7 +316,7 @@ int delete_key(int key) {
     char response[MAXSIZE]="";
 
     // Relleno del mensaje
-    strcpy(request, create_message(4, key, NULL, 0, NULL));
+    create_message(4, key, NULL, 0, NULL, request);
 
     // Envío del mensaje
     if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
@@ -354,7 +351,7 @@ int exist(int key) {
     char response[MAXSIZE]="";
 
     // Relleno del mensaje
-    strcpy(request, create_message(5, key, NULL, 0, NULL));
+    create_message(5, key, NULL, 0, NULL, request);
 
     // Envío del mensaje
     if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
