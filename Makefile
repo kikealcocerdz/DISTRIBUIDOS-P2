@@ -18,7 +18,6 @@ $(SOURCE_DIR)/claves.o: $(SOURCE_DIR)/claves.c
 
 clean:
 	rm -f $(SOURCE_DIR)/claves.o $(SOURCE_DIR)/libclaves.so cliente servidor
-	rm -f /dev/mqueue/*
 
 run-cliente: cliente
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) env IP_TUPLAS=localhost PORT_TUPLAS=4500 ./cliente
