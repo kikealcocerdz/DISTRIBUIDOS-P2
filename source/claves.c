@@ -10,9 +10,32 @@
 #include <netinet/in.h>
 #include "comm.h"
 
+
 #define MAXSIZE 256
 
 int sock;
+
+char *IP_TUPLAS;
+int PORT_TUPLAS;
+
+int initialize_env_variables() {
+    IP_TUPLAS = getenv("IP_TUPLAS");
+    if (IP_TUPLAS == NULL) {
+        printf("Variable IP_TUPLAS no definida\n");
+        exit(EXIT_FAILURE);
+    } else {
+        printf("Variable IP_TUPLAS definida con valor %s\n", IP_TUPLAS);
+    }
+
+    char *port_env = getenv("PORT_TUPLAS");
+    if (port_env == NULL) {
+        printf("Variable PORT_TUPLAS no definida\n");
+        exit(EXIT_FAILURE);
+    } else {
+        PORT_TUPLAS = atoi(port_env);
+        printf("Variable PORT_TUPLAS definida con valor %d\n", PORT_TUPLAS);
+    }
+}
 
 static char *create_message(int op, int key, char *value1, int N_Value2, double *V_Value2) {
     char *cadena = (char *)malloc(MAXSIZE * sizeof(char)); // Reservar memoria para la cadena
@@ -59,8 +82,9 @@ static char *create_message(int op, int key, char *value1, int N_Value2, double 
 }
 
 int init() {
+    initialize_env_variables();
     // Creación de la conexión del socket
-    sock = clientSocket("127.0.0.1", 4200);
+    sock = clientSocket(IP_TUPLAS, PORT_TUPLAS);
     if (sock < 0) {
         perror("Client socket failed");
         exit(EXIT_FAILURE);
@@ -72,27 +96,15 @@ int init() {
     // Relleno del mensaje
     double aux[MAXSIZE] = { 0.0 };
     strcpy(request, create_message(0, -1, NULL, 1, aux)); 
-    int longitud = strlen(request);
 
 
-    // Envío del mensaje
-    if (sendMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
         perror("Send request failed");
         exit(EXIT_FAILURE);
     }
 
-    if (sendMessage(sock, (char *)&request, longitud) < 0) {
-        perror("Send request failed");
-        exit(EXIT_FAILURE);
-    }
-
-    // Recepción del mensaje
-    if (recvMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
-        perror("Receive response failed");
-        exit(EXIT_FAILURE);
-    }
     
-    if (recvMessage(sock, (char *)&response, longitud) < 0) {
+    if (readLine(sock, (char *)&response, MAXSIZE) < 0) {
         perror("Receive response failed");
         exit(EXIT_FAILURE);
     }
@@ -105,8 +117,9 @@ int init() {
 }
 
 int set_value(int key, char *value1, int N_value2, double *V_value2) {
+    initialize_env_variables();
     // Creación de la conexión del socket
-    int sock = clientSocket("127.0.0.1", 4200);
+    int sock = clientSocket(IP_TUPLAS, PORT_TUPLAS);
     if (sock < 0) {
         perror("Client socket failed");
         exit(EXIT_FAILURE);
@@ -134,29 +147,17 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
     }
     strcpy(request, create_message(1, key, value1, N_value2, V_value2));
 
-    int longitud = strlen(request);
-
     // Envío del mensaje
-    if (sendMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
         perror("Send request failed");
         exit(EXIT_FAILURE);
     }
 
-    if (sendMessage(sock, (char *)&request, longitud) < 0) {
-        perror("Send request failed");
-        exit(EXIT_FAILURE);
-    }
-
-    // Recepción del mensaje
-    if (recvMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    
+    if (readLine(sock, (char *)&response, MAXSIZE) < 0) {
         perror("Receive response failed");
         exit(EXIT_FAILURE);
     }
-    if (recvMessage(sock, (char *)&response, longitud) < 0) {
-        perror("Receive response failed");
-        exit(EXIT_FAILURE);
-    }
-
     printf("Resultado recibido del servidor: %s\n", response);
 
     // Cierre del socket
@@ -165,8 +166,10 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 }
 
 int get_value(int key, char *value1, int *N_value2, double *V_value2) {
+
+    initialize_env_variables();
     // Creación de la conexión del socket
-    int sock = clientSocket("127.0.0.1", 4200);
+    int sock = clientSocket(IP_TUPLAS, PORT_TUPLAS);
     if (sock < 0) {
         perror("Client socket failed");
         return -1;
@@ -188,33 +191,17 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
     // Relleno del mensaje, este da igual lo que le pasemos en value1, N_value2 y V_value2,
     // ya que queremos que nos lo devuelva el servidor
     strcpy(request, create_message(2, key, value1, *N_value2, V_value2));
-    int longitud = strlen(request);
 
     // Envío del mensaje
-    if (sendMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
         perror("Send request failed");
-        close(sock);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    if (sendMessage(sock, (char *)&request, longitud) < 0) {
-        perror("Send request failed");
-        close(sock);
-        return -1;
-    }
-
-
-    // Recepción del mensaje
-    if (recvMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    
+    if (readLine(sock, (char *)&response, MAXSIZE) < 0) {
         perror("Receive response failed");
-        close(sock);
-        return -1;
-    }
-
-    if (recvMessage(sock, (char *)&response, longitud) < 0) {
-        perror("Receive response failed");
-        close(sock);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     printf("Resultado recibido del servidor: %s\n", response);
@@ -268,8 +255,10 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 
 
 int modify_value(int key, char *value1, int N_value2, double *V_value2) {
+    
+    initialize_env_variables();
     // Creación del socket
-    int sock = clientSocket("127.0.0.1", 4200);
+    int sock = clientSocket(IP_TUPLAS, PORT_TUPLAS);
     if (sock < 0) {
         perror("Client socket failed");
         return -1;
@@ -296,32 +285,17 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
         strcat(cadena, request);
     }
     strcpy(request, create_message(3, key, value1, N_value2, V_value2));
-    int longitud = strlen(request);
 
     // Enviamos el mensaje
-    if (sendMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
         perror("Send request failed");
-        close(sock);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    if (sendMessage(sock, (char *)&request, longitud) < 0) {
-        perror("Send request failed");
-        close(sock);
-        return -1;
-    }
-
-    // Recibimos el mensaje
-    if (recvMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    
+    if (readLine(sock, (char *)&response, MAXSIZE) < 0) {
         perror("Receive response failed");
-        close(sock);
-        return -1;
-    }
-
-    if (recvMessage(sock, (char *)&response, longitud) < 0) {
-        perror("Receive response failed");
-        close(sock);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     printf("Resultado recibido del servidor: %s\n", response);
@@ -332,8 +306,10 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 }
 
 int delete_key(int key) {
+    initialize_env_variables();
+
     // Creación de la conexión del socket
-    int sock = clientSocket("127.0.0.1", 4200);
+    int sock = clientSocket(IP_TUPLAS, PORT_TUPLAS);
     if (sock < 0) {
         perror("Client socket failed");
         return -1;
@@ -344,32 +320,17 @@ int delete_key(int key) {
 
     // Relleno del mensaje
     strcpy(request, create_message(4, key, NULL, 0, NULL));
-    int longitud = strlen(request);
 
     // Envío del mensaje
-    if (sendMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
         perror("Send request failed");
-        close(sock);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    if (sendMessage(sock, (char *)&request, longitud) < 0) {
-        perror("Send request failed");
-        close(sock);
-        return -1;
-    }
-
-    // Recepción del mensaje
-    if (recvMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    
+    if (readLine(sock, (char *)&response, MAXSIZE) < 0) {
         perror("Receive response failed");
-        close(sock);
-        return -1;
-    }
-
-    if (recvMessage(sock, (char *)&response, longitud) < 0) {
-        perror("Receive response failed");
-        close(sock);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     printf("Resultado recibido del servidor: %s\n", response);
@@ -380,8 +341,10 @@ int delete_key(int key) {
 }
 
 int exist(int key) {
+    initialize_env_variables();
+
     // Creación de la conexión del socket
-    int sock = clientSocket("127.0.0.1", 4200);
+    int sock = clientSocket(IP_TUPLAS, PORT_TUPLAS);
     if (sock < 0) {
         perror("Client socket failed");
         return -1;
@@ -392,32 +355,17 @@ int exist(int key) {
 
     // Relleno del mensaje
     strcpy(request, create_message(5, key, NULL, 0, NULL));
-    int longitud = strlen(request);
 
     // Envío del mensaje
-    if (sendMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    if (sendMessage(sock, (char *)&request, strlen(request) + 1) < 0) {
         perror("Send request failed");
-        close(sock);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    if (sendMessage(sock, (char *)&request, longitud) < 0) {
-        perror("Send request failed");
-        close(sock);
-        return -1;
-    }
-
-    // Recepción del mensaje
-    if (recvMessage(sock, (char *)&longitud, sizeof(int)) < 0) {
+    
+    if (readLine(sock, (char *)&response, MAXSIZE) < 0) {
         perror("Receive response failed");
-        close(sock);
-        return -1;
-    }
-
-    if (recvMessage(sock, (char *)&response, longitud) < 0) {
-        perror("Receive response failed");
-        close(sock);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     printf("Resultado recibido del servidor: %s\n", response);

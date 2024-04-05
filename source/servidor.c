@@ -8,13 +8,15 @@
 #include <stdlib.h>
 #include "comm.h"
 
+#define MAXSIZE 256
+
 pthread_mutex_t mutex_mensaje;
 int mensaje_no_copiado = true;
 pthread_cond_t cond_mensaje;
 
 void tratar_mensaje(void *arg) {
     int sc = *(int *)arg;
-    int ret, longitud;
+    int ret;
     char op='\0';
     char value1[256]="", cadena[256]="", res[256]="";
     char V_Value2[256]="";
@@ -22,13 +24,7 @@ void tratar_mensaje(void *arg) {
 
     pthread_mutex_lock(&mutex_mensaje);
 
-    if (recvMessage(sc, (char *)&longitud, sizeof(int)) == -1) {
-        perror("error al recvMessage 1 ");
-        pthread_mutex_unlock(&mutex_mensaje);
-        return;
-    }
-
-    if (recvMessage(sc, (char *)&cadena, longitud) == -1) {
+    if (readLine(sc, (char *)&cadena, MAXSIZE) == -1) {
         perror("error al recvMessage 2");
         pthread_mutex_unlock(&mutex_mensaje);
         return;
@@ -89,15 +85,7 @@ void tratar_mensaje(void *arg) {
             break;
     }
 
-
-    longitud = strlen(res);
-    ret = sendMessage(sc, (char *)&longitud, sizeof(int));
-    if (ret == -1) {
-        pthread_mutex_unlock(&mutex_mensaje);
-        return;
-    }
-
-    ret = sendMessage(sc, res, longitud);
+    ret = sendMessage(sc, res, strlen(res) + 1);
     if (ret == -1) {
         pthread_mutex_unlock(&mutex_mensaje);
         return;
@@ -109,12 +97,19 @@ void tratar_mensaje(void *arg) {
     pthread_exit(NULL);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     int sd, sc;
     pthread_attr_t t_attr;
     pthread_t thid;
 
-    sd = serverSocket(INADDR_ANY, 4200, SOCK_STREAM);
+    if (argc != 2) {
+        printf("Uso: %s <puerto>\n", argv[0]);
+        return 0;
+    }
+    int PORT_SERVER = atoi(argv[1]);
+
+
+    sd = serverSocket(INADDR_ANY, PORT_SERVER, SOCK_STREAM);
     if (sd < 0) {
         printf("SERVER: Error en serverSocket\n");
         return 0;
