@@ -206,7 +206,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
     //Aqui va la funcion que se encarga de separar el mensaje respuesta y almacenar los valores en las variables correspondientes
     char *token;
     char res;
-    printf("Respuesta: %s\n", response);
+    printf("Respuesta en get value: %s\n", response);
     token = strtok(response, "/");
     if (token != NULL) {
         res = token[0]; 
@@ -227,12 +227,18 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 
     token = strtok(NULL, "/");
     for (int i = 0; i < *N_value2; i++) {
-        token = strtok(NULL, "-");
-        if (token != NULL) {
-            V_value2[i] = atof(token); 
-        }
-        //printf("V_value2[%d]: %lf\n", i, V_value2[i]);
+    V_value2[i] = 0.0;
+}
+    printf("V_value2: %s\n", token);
+    char *subtoken = strtok(token, "-");
+for (int i = 0; i < *N_value2; i++) {
+    printf("El subtoken actual es: %s\n", subtoken);
+    if (subtoken != NULL) {
+        V_value2[i] = atof(subtoken); 
     }
+    printf("V_value2[%d]: %lf\n", i, V_value2[i]);
+    subtoken = strtok(NULL, "-"); // Avanza al siguiente subtoken
+}
     printf("V_value2: [");
     for(int i = 0; i < *N_value2; i++) {
         printf("%f", V_value2[i]);
@@ -244,7 +250,6 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 
     // Cierre del socket
     close(sock);
-    //Hay que devolver los valores que se necesitan(Creo que lo hicimos mal en el anterior...)
     return res;
 }
 

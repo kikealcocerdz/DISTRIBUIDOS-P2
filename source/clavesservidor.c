@@ -78,18 +78,25 @@ void set_value_serv(int key, char *value1, int N_value2, char *V_value2, char *r
 }
 
 void get_value_serv(int key, char *value1, int *N_value2, char *V_value2, char *res) {
+    printf("Estoy dentro del key\n");
     char filename[20]; 
     sprintf(filename, "./claves/%d.txt", key);
     FILE *clavesFile = fopen(filename, "r");
     if (clavesFile == NULL) {
+        printf("Error al abrir claves file\n");
         sprintf(res, "-1");
         return;
     }
 
     // Leer el contenido del archivo y almacenarlo en las variables
     if (fscanf(clavesFile, "%d %s %d %s", &key, value1, N_value2, V_value2) != 4) {
+        printf("Se ha leído:\n");
+        printf("Key: %d\n", key);
+        printf("Value1: %s\n", value1);
+        printf("N_Value2: %d\n", *N_value2);
+        printf("V_Value2: %s\n", V_value2);
         fclose(clavesFile);
-        printf("Error\n");
+        printf("Error escanear\n");
         sprintf(res, "-1");
         return;
     }

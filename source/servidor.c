@@ -29,6 +29,7 @@ void tratar_mensaje(void *arg) {
         pthread_mutex_unlock(&mutex_mensaje);
         return;
     }
+    printf("Cadena recibida: %s\n", cadena);
 
 
     mensaje_no_copiado = false;
@@ -69,6 +70,7 @@ void tratar_mensaje(void *arg) {
             set_value_serv(key, value1, N_Value2, V_Value2, res);
             break;
         case '2':
+            printf("SOY GETVALUE Y HE RECIBIDO DE MENSAJE: key: %d, value1: %s, N_Value2: %d, V_Value2: %s\n", key, value1, N_Value2, V_Value2);
             get_value_serv(key, value1, &N_Value2, V_Value2, res);
             break;
         case '3':
