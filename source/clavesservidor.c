@@ -34,14 +34,14 @@ void init_serv(char *res) {
         }
         // Eliminar el directorio /claves
         if (remove("./claves") == -1) {
-            printf("Error al eliminar ./claves\n");
+            perror("Error al eliminar ./claves\n");
             sprintf(res, "-1");
             return; 
         }
     }
     // Crear el directorio /claves
     if (mkdir("./claves", 0777) == -1) {
-        printf("Error al eliminar ./claves\n");
+        perror("Error al eliminar ./claves\n");
         sprintf(res, "-1");
         return;  
     }
@@ -78,25 +78,20 @@ void set_value_serv(int key, char *value1, int N_value2, char *V_value2, char *r
 }
 
 void get_value_serv(int key, char *value1, int *N_value2, char *V_value2, char *res) {
-    printf("Estoy dentro del key\n");
     char filename[20]; 
     sprintf(filename, "./claves/%d.txt", key);
     FILE *clavesFile = fopen(filename, "r");
+    
     if (clavesFile == NULL) {
-        printf("Error al abrir claves file\n");
+        perror("Error al abrir claves file\n");
         sprintf(res, "-1");
         return;
     }
 
     // Leer el contenido del archivo y almacenarlo en las variables
     if (fscanf(clavesFile, "%d %s %d %s", &key, value1, N_value2, V_value2) != 4) {
-        printf("Se ha leído:\n");
-        printf("Key: %d\n", key);
-        printf("Value1: %s\n", value1);
-        printf("N_Value2: %d\n", *N_value2);
-        printf("V_Value2: %s\n", V_value2);
         fclose(clavesFile);
-        printf("Error escanear\n");
+        perror("Error get_value valores esperados\n");
         sprintf(res, "-1");
         return;
     }
@@ -144,7 +139,6 @@ void exists_serv(int key, char*res) {
     while (fscanf(clavesFile, "%d %s %d", &key_leida, valor1, &N_value2) == 3) {
         if (key_leida == key) {
             fclose(clavesFile);
-            printf("Key existe\n");
             sprintf(res, "1");
             return;
         }

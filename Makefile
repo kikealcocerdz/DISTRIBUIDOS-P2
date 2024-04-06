@@ -23,8 +23,5 @@ run-cliente: cliente
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) env IP_TUPLAS=localhost PORT_TUPLAS=4500 ./cliente
 
 run-servidor: servidor
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./servidor
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./servidor 4500
 
-run:
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./servidor
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(SOURCE_DIR) ./cliente

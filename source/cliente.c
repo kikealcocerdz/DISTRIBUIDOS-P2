@@ -29,15 +29,14 @@ int main() {
       int N_value3=4;
       double V_value2[] = {1.0, 2.0, 3.0};
       double V_value3[] = {1.0, 5.0, 159.0};
-      init();
       printf("Cliente %d\n", getpid());
       // Ejecución diferente para cada cliente
       if (i == 0) {
-        set_value(1, "buenosdias", N_value2, V_value3);
+        set_value(1, "MensajeCliente1", N_value2, V_value3);
         printf("HE CREADO LA CLAVE 1/n");
-        sleep(10);
+        sleep(3);
         get_value(1, value1, &N_value3, V_value2);
-        printf("Soy el cliente y recibo:value1: %s, N_value2: %d, ", value1, N_value2);
+        printf("Soy el cliente y recibo:value1: %s, N_value2: %d, \n", value1, N_value2);
         printf("V_value2: [");
         for(int i = 0; i < N_value2; i++) {
             printf("%f", V_value2[i]);
@@ -46,15 +45,15 @@ int main() {
             }
         }
         printf("]\n");
-        sleep(10); 
+        sleep(2); 
         printf("Fin cliente 1\n");
 
         return 0;
       }
       if (i == 1) {
-        set_value(15, "buenos días", N_value2, V_value3);
+        set_value(15, "MensajeCliente2", N_value2, V_value3);
         sleep(3);
-        modify_value(15, "ModificadoPorCliente", N_value2, V_value3);
+        modify_value(15, "ModificadoPorCliente", N_value2, V_value2);
         printf("Fin cliente 2\n");
         return 0; 
       }

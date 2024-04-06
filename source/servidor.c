@@ -31,7 +31,6 @@ void tratar_mensaje(void *arg) {
     }
     printf("Cadena recibida: %s\n", cadena);
 
-
     mensaje_no_copiado = false;
     pthread_cond_signal(&cond_mensaje);
     pthread_mutex_unlock(&mutex_mensaje);
@@ -70,7 +69,6 @@ void tratar_mensaje(void *arg) {
             set_value_serv(key, value1, N_Value2, V_Value2, res);
             break;
         case '2':
-            printf("SOY GETVALUE Y HE RECIBIDO DE MENSAJE: key: %d, value1: %s, N_Value2: %d, V_Value2: %s\n", key, value1, N_Value2, V_Value2);
             get_value_serv(key, value1, &N_Value2, V_Value2, res);
             break;
         case '3':
@@ -105,8 +103,8 @@ int main(int argc, char *argv[]) {
     pthread_t thid;
 
     if (argc != 2) {
-        printf("Uso: %s <puerto>\n", argv[0]);
-        return 0;
+        fprintf(stderr, "Uso: %s <puerto>\n", argv[0]);
+        return -1;
     }
     int PORT_SERVER = atoi(argv[1]);
 
