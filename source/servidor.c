@@ -102,6 +102,7 @@ int main(int argc, char *argv[]) {
     pthread_attr_t t_attr;
     pthread_t thid;
 
+    // Verificar que se pasa el puerto como argumento
     if (argc != 2) {
         fprintf(stderr, "Uso: %s <puerto>\n", argv[0]);
         return -1;
@@ -126,7 +127,8 @@ int main(int argc, char *argv[]) {
             printf("Error en serverAccept\n");
             continue;
         }
-
+        
+        // Crear un hilo para tratar el mensaje
         if (pthread_create(&thid, &t_attr, (void *)tratar_mensaje, (void *)&sc) == 0) {
             pthread_mutex_lock(&mutex_mensaje);
             while (mensaje_no_copiado)

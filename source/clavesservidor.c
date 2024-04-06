@@ -17,6 +17,7 @@ int N_value2;
 double V_value2[100];
 
 void init_serv(char *res) {
+
     // Eliminar el directorio /claves si existe
     if (access("./claves", F_OK) == 0) {
         DIR *dir = opendir("./claves");
@@ -39,6 +40,7 @@ void init_serv(char *res) {
             return; 
         }
     }
+
     // Crear el directorio /claves
     if (mkdir("./claves", 0777) == -1) {
         perror("Error al eliminar ./claves\n");
@@ -126,6 +128,7 @@ void modify_value_serv(int key, char *value1, int N_value2, char *V_value2, char
     set_value_serv(key, value1, N_value2, V_value2, res);
     return;
 }
+
 
 void exists_serv(int key, char*res) {
     char filename[20]; 
